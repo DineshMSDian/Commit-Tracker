@@ -1,3 +1,4 @@
+from openai import OpenAI
 import os
 import requests
 from datetime import datetime, timezone
@@ -54,6 +55,32 @@ def fetch_all_commits():
         commits = get_todays_commits(repo)
         all_commits.extend(commits)
     return all_commits
+
+def generate_summary(commits):
+    if not commits:
+        return "No commits today. Rest day or planning day!"
+
+    commit_lines = ""
+    for c in commits:
+        commit_lines = commit_lines + "- [" + c["repo"] + "] " + c["message"] + "\n"
+
+    client = OpenAI(
+        api_key=os.getenv('OPENAI_API_KEY'),
+        base_url=os.getenv('OPEN_ROUTER_BASE_URL')
+    )
+
+    response = client.chat.completions.create(
+        model="deepseek-v4-flash",
+        max_tokens=500,
+        messages=[
+            {
+                "role": "user",
+                "content": "You are a developer journal bot. Given today's GitHub commits, write a short WhatsApp-friendly daily summary in 4-6 lines. Be conversational, not robotic. Mention what was built and why it matters.\n\nCommits:\n" + commit_lines + "\nWrite the summary now:"
+            }
+        ]
+    )
+
+    return response.choices[0].message.content
 
 
 if __name__ == "__main__":
