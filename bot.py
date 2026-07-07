@@ -35,9 +35,29 @@ def get_todays_commits(repo_name):
 
     return result
 
+def get_all_repos():
+    url = "https://api.github.com/user/repos?per_page=100&type=owner"
+    response = requests.get(url, headers=HEADERS)
+    repos = response.json()
+
+    repo_names = []
+
+    for repo in repos:
+        repo_names.append(repo["full_name"])
+
+    return repo_names
+
+def fetch_all_commits():
+    repos = get_all_repos()
+    all_commits = []
+    for repo in repos:
+        commits = get_todays_commits(repo)
+        all_commits.extend(commits)
+    return all_commits
+
 
 if __name__ == "__main__":
-    commits = get_todays_commits('debug_diaries')
+    commits = fetch_all_commits()
     if commits:
         for c in commits:
             print(f"[{c['repo']}] {c['message']} @ {c['time']}")
