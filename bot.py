@@ -82,11 +82,27 @@ def generate_summary(commits):
 
     return response.choices[0].message.content
 
+def send_whatsapp(summary):
+    instance_id = os.getenv('ULTRAMSG_INSTANCE')
+    token = os.getenv('ULTRAMSG_TOKEN')
+    number = os.getenv('WHATSAPP_NUMBER')
+
+    url = f'https://api.ultramsg.com/{instance_id}/messages/chat'
+    payload = {
+        "token": token,
+        "to": number,
+        "body": summary
+    }
+    response = requests.post(url, data=payload)
+
+    if response.status_code == 200:
+        print("WhatsApp message sent successfully!")
+    else:
+        print("Failed to send. Status: " + str(response.status_code))
+        print(response.text)
 
 if __name__ == "__main__":
     commits = fetch_all_commits()
-    if commits:
-        for c in commits:
-            print(f"[{c['repo']}] {c['message']} @ {c['time']}")
-    else:
-        print("No commits today.")
+    summary = generate_summary(commits)
+    print(summary)
+    send_whatsapp(summary)
