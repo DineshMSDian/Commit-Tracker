@@ -105,4 +105,4 @@ if __name__ == "__main__":
     commits = fetch_all_commits()
     summary = generate_summary(commits)
     print(summary)
-    send_whatsapp(summary)
+    send_whatsapp(summary)  
